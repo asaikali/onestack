@@ -4,3 +4,4 @@ resources:
   - flux-system/gotk-components.yaml
   - cert-manager/sync.yaml
   - external-secrets/sync.yaml
+  - envoy-gateway/sync.yaml
