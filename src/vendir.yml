@@ -43,3 +43,24 @@ directories:
             version: "v1.0.0"
             repository:
               url: https://charts.external-secrets.io
+
+  # ---------------------------------------------------------------------------
+  # Envoy Gateway
+  # ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # Envoy Gateway
+  # ---------------------------------------------------------------------------
+#  - path: components/envoy-gateway/upstream
+#    contents:
+#      - path: chart
+#        helmChart:
+#          name: ""                          # 👈 required but intentionally empty
+#          version: "v1.5.4"
+#          repository:
+#            url: oci://docker.io/envoyproxy/gateway-helm
+
+  - path: components/envoy-gateway/upstream
+    contents:
+      - path: chart
+        image:
+          url: docker.io/envoyproxy/gateway-helm:v1.5.4

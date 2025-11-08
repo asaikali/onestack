@@ -18,4 +18,10 @@ directories:
       version: 1.0.0
     path: chart
   path: components/external-secrets/upstream
+- contents:
+  - image:
+      tag: v1.5.4
+      url: index.docker.io/envoyproxy/gateway-helm@sha256:75139e07771830ffa1e9d5dbbb3d7037499bdfc757e70e536af592e085f69c1b
+    path: chart
+  path: components/envoy-gateway/upstream
 kind: LockConfig
