@@ -23,9 +23,21 @@ directories:
   # ---------------------------------------------------------------------------
   - path: components/cert-manager/upstream
     contents:
-        - path: chart
-          helmChart:
-            name: cert-manager
-            version: "v1.19.1"
-            repository:
-              url: oci://quay.io/jetstack/charts
+      - path: manifests
+        extract: true
+        githubRelease:
+          slug: cert-manager/cert-manager
+          tag: v1.19.1
+          disableAutoChecksumValidation: true
+          assetNames:
+            - cert-manager.yaml
+
+#
+#  - path: components/cert-manager/upstream
+#    contents:
+#        - path: chart
+#          helmChart:
+#            name: cert-manager
+#            version: "v1.19.1"
+#            repository:
+#              url: oci://quay.io/jetstack/charts

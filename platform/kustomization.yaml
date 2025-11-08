@@ -1,0 +1,14 @@
+# platform/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # Bootstrap controllers (Flux itself)
+  - ./flux-system/gotk-sync.yaml
+
+#  # Core infrastructure layers
+#  - ./cert-manager/kustomization.yaml
+#  - ./external-secrets/kustomization.yaml
+#  - ./cloudnative-pg/kustomization.yaml
+#
+#  # Networking layer
+#  - ./envoy-gateway/kustomization.yaml
