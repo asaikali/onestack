@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - flux-system/gotk-components.yaml
   - cert-manager/sync.yaml
+  - external-secrets/sync.yaml
