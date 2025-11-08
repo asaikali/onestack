@@ -2,7 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: onestack
+  name: platform
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -23,4 +23,4 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: onestack
+    name: platform

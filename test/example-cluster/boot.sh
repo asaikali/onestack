@@ -3,6 +3,7 @@ set -euo pipefail
 
 NAMESPACE="flux-system"
 COMPONENTS_URL="https://raw.githubusercontent.com/asaikali/onestack/main/platform/flux-system/gotk-components.yaml"
+CLUSTER_URL="https://raw.githubusercontent.com/asaikali/onestack/main/test/example-cluster/sync/cluster.yaml"
 
 # ANSI escape code for bold text
 BOLD=$(tput bold)
@@ -29,3 +30,6 @@ section "🔍 Verifying controller versions..."
 kubectl -n "${NAMESPACE}" get deployments -o wide
 
 section "🎉 Flux bootstrap phase complete."
+
+section "🚀 Bootstrapping cluster..."
+kubectl apply -f "${CLUSTER_URL}"
