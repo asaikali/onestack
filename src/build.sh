@@ -20,7 +20,9 @@ kustomize build components/cert-manager > ${CERT_MANAGER}
 helm template external-secrets \
     components/external-secrets/upstream/chart \
     -n external-secrets \
-    --create-namespace > ${ESO}
+    --create-namespace >  components/external-secrets/upstream/rendered-external-secrets.yaml
+
+kustomize build components/external-secrets > ${ESO}
 
 
 echo "Generated files:"
