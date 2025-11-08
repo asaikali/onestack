@@ -1,16 +1,4 @@
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
-metadata:
-  name: platform
-  namespace: flux-system
-spec:
-  interval: 1m0s
-  url:   https://github.com/asaikali/onestack.git
-  ref:
-    branch: main
-  sparseCheckout:
-    - platform
+
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

@@ -2,7 +2,21 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: cluster
+  name: platform-packages
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  url:   https://github.com/asaikali/onestack.git
+  ref:
+    branch: main
+  sparseCheckout:
+    - platform
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: cluster-config
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -12,6 +26,29 @@ spec:
   sparseCheckout:
     - test/example-cluster
 ---
+apiVersion: source.extensions.fluxcd.io/v1beta1
+kind: ArtifactGenerator
+metadata:
+  name: cluster
+  namespace: flux-system
+spec:
+  sources:
+    - alias: platform-packages
+      kind: GitRepository
+      name: platform-packages
+
+    - alias: cluster-config
+      kind: GitRepository
+      name: cluster-config
+  artifacts:
+    - name: cluster
+      copy:
+        - from: "@platform-packages/platform/"
+          to: "@artifact/"
+        - from: "@cluster-config/test/example-cluster/"
+          to: "@artifact/"
+
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -19,7 +56,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./test/example-cluster
+  path: ./example-cluster
   prune: true
   sourceRef:
     kind: GitRepository
