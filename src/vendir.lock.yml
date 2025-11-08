@@ -12,4 +12,10 @@ directories:
       url: https://api.github.com/repos/cert-manager/cert-manager/releases/254726664
     path: manifests
   path: components/cert-manager/upstream
+- contents:
+  - helmChart:
+      appVersion: v1.0.0
+      version: 1.0.0
+    path: chart
+  path: components/external-secrets/upstream
 kind: LockConfig
