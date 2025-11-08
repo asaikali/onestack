@@ -2,7 +2,7 @@
 set -euo pipefail
 
 NAMESPACE="flux-system"
-COMPONENTS_URL="https://raw.githubusercontent.com/asaikali/onestack/main/platform/flux-system/gotk-components.yaml"
+COMPONENTS_URL="https://raw.githubusercontent.com/asaikali/onestack/main/platform/flux/flux.yaml"
 CLUSTER_URL="https://raw.githubusercontent.com/asaikali/onestack/main/test/example-cluster/sync/cluster.yaml"
 
 # ANSI escape code for bold text
