@@ -2,6 +2,9 @@ apiVersion: vendir.k14s.io/v1alpha1
 kind: Config
 
 directories:
+  # ---------------------------------------------------------------------------
+  # Flux components
+  # ---------------------------------------------------------------------------
   - path: components/flux/upstream
     contents:
       - path: manifests
@@ -14,3 +17,15 @@ directories:
             - manifests.tar.gz
           unpackArchive:
             path: manifests.tar.gz
+
+  # ---------------------------------------------------------------------------
+  # Cert-Manager Helm chart
+  # ---------------------------------------------------------------------------
+  - path: components/cert-manager/upstream
+    contents:
+        - path: chart
+          helmChart:
+            name: cert-manager
+            version: "v1.19.1"
+            repository:
+              url: oci://quay.io/jetstack/charts

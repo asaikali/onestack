@@ -6,4 +6,10 @@ directories:
       url: https://api.github.com/repos/fluxcd/flux2/releases/257895642
     path: manifests
   path: components/flux/upstream
+- contents:
+  - helmChart:
+      appVersion: v1.19.1
+      version: v1.19.1
+    path: chart
+  path: components/cert-manager/upstream
 kind: LockConfig
