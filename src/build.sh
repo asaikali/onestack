@@ -8,7 +8,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 PLATFORM_DIR=${REPO_ROOT}/platform
 
-FLUX_YAML="${PLATFORM_DIR}/bootstrap/flux.yaml"
+FLUX_YAML="${PLATFORM_DIR}/flux-system/gotk-components.yaml"
 
 # Build the bootstrap manifest
 echo "Running kustomize build..."
