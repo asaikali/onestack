@@ -63,11 +63,20 @@ spec:
   dependsOn:
     - name: flux
   prune: true
-  wait: true
+  wait: false
   sourceRef:
     kind: ExternalArtifact
     name: cluster
   path: ./platform/cert-manager/install
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cert-manager
+      namespace: cert-manager
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cert-manager-webhook
+      namespace: cert-manager
 
 # --------------------------------------------------------------------------------------------------
 # Configure cluster-wide certificate issuers (CA, platform-issuer, etc.)
