@@ -9,5 +9,6 @@ spec:
   path: ./platform/cert-manager/
   prune: true
   sourceRef:
-    kind: GitRepository
-    name: platform
+    kind: ExternalArtifact
+    name: cluster
+

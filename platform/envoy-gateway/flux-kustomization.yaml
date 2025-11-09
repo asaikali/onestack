@@ -9,7 +9,7 @@ spec:
   path: ./platform/envoy-gateway
   prune: true
   sourceRef:
-    kind: GitRepository
-    name: platform
+    kind: ExternalArtifact
+    name: cluster
   dependsOn:
     - name: cert-manager   # 👈 reference by metadata.name of the other Kustomization
