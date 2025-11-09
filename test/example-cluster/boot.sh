@@ -33,3 +33,7 @@ section "🎉 Flux bootstrap phase complete."
 
 section "🚀 Bootstrapping cluster..."
 kubectl apply -f "${CLUSTER_URL}"
+
+
+section "🚀 flux resources..."
+flux get all
