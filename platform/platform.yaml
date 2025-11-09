@@ -9,13 +9,28 @@
 #   - which component it depends on (`dependsOn`)
 #   - how Flux should handle reconciliation (`interval`, `prune`, `wait`, etc.)
 #
-#  The dependency chain is structured as follows:
+#  The dependency structure forms a tree:
 #
-#      flux  ──▶  cert-manager-install  ──▶  cert-manager-config  ──▶  external-secrets  ──▶  envoy-gateway
+#                     ┌───────────────────────────┐
+#                     │           flux            │
+#                     └────────────┬──────────────┘
+#                                  │
+#                     ┌────────────▼──────────────┐
+#                     │   cert-manager-install    │
+#                     └────────────┬──────────────┘
+#                                  │
+#                     ┌────────────▼──────────────┐
+#                     │    cert-manager-config    │
+#                     └───────┬──────────┬────────┘
+#                             │          │
+#               ┌─────────────▼───┐   ┌──▼──────────────┐
+#               │ external-secrets│   │  envoy-gateway  │
+#               │    operator     │   │ (ingress layer) │
+#               └─────────────────┘   └─────────────────┘
 #
-#  This ensures a predictable and stable rollout order during cluster bootstrap or upgrades.
+#  This ensures a predictable and stable rollout order during cluster bootstrap or upgrades,
+#  even when multiple components share the same base dependencies.
 # ==================================================================================================
-
 
 # --------------------------------------------------------------------------------------------------
 # 1️⃣  Bootstrap Flux itself
