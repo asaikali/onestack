@@ -22,6 +22,10 @@ directories:
   - image:
       tag: v1.5.4
       url: index.docker.io/envoyproxy/gateway-helm@sha256:75139e07771830ffa1e9d5dbbb3d7037499bdfc757e70e536af592e085f69c1b
-    path: chart
-  path: components/envoy-gateway/upstream
+    path: release
+  - image:
+      tag: v1.5.4
+      url: index.docker.io/envoyproxy/gateway-crds-helm@sha256:dad1c16ef81e911fa8a10ab13192c0c3c3cf3a788a4a3dce5a667dc7eeaba9a1
+    path: crds
+  path: components/envoy-gateway/upstream/charts
 kind: LockConfig

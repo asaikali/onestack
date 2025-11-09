@@ -59,8 +59,11 @@ directories:
 #          repository:
 #            url: oci://docker.io/envoyproxy/gateway-helm
 
-  - path: components/envoy-gateway/upstream
+  - path: components/envoy-gateway/upstream/charts
     contents:
-      - path: chart
+      - path: release
         image:
           url: docker.io/envoyproxy/gateway-helm:v1.5.4
+      - path: crds
+        image:
+          url: docker.io/envoyproxy/gateway-crds-helm:v1.5.4

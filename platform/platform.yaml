@@ -85,7 +85,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cert-manager-config
+  name: platform-issuer
   namespace: flux-system
 spec:
   interval: 10m
@@ -111,7 +111,7 @@ metadata:
 spec:
   interval: 10m
   dependsOn:
-    - name: cert-manager-config
+    - name: platform-issuer
   prune: true
   wait: true
   sourceRef:
@@ -126,18 +126,37 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: envoy-gateway-prereqs
+  name: envoy-gateway-webhook-cert
   namespace: flux-system
 spec:
   interval: 10m
   dependsOn:
-    - name: cert-manager-config
+    - name: platform-issuer
   prune: true
   wait: true
   sourceRef:
     kind: ExternalArtifact
     name: cluster
   path: ./platform/envoy-gateway/pre-install
+
+  # --------------------------------------------------------------------------------------------------
+  # Deploy Envoy Gateway CRDs
+  # --------------------------------------------------------------------------------------------------
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: envoy-gateway-crds
+  namespace: flux-system
+spec:
+  interval: 10m
+  prune: true
+  wait: true
+  sourceRef:
+    kind: ExternalArtifact
+    name: cluster
+  path: ./platform/envoy-gateway/crds
+
 
 
 # --------------------------------------------------------------------------------------------------
@@ -152,7 +171,8 @@ metadata:
 spec:
   interval: 10m
   dependsOn:
-    - name: envoy-gateway-prereqs
+    - name: envoy-gateway-webhook-cert
+    - name: envoy-gateway-crds
   prune: true
   wait: true
   sourceRef:

@@ -48,6 +48,7 @@ FLUX_OUT="${PLATFORM_DIR}/flux/flux.yaml"
 CERT_MANAGER_OUT="${PLATFORM_DIR}/cert-manager/install/cert-manager.yaml"
 ESO_OUT="${PLATFORM_DIR}/external-secrets/external-secrets.yaml"
 ENVOY_GATEWAY_OUT="${PLATFORM_DIR}/envoy-gateway/install/envoy-gateway.yaml"
+ENVOY_GATEWAY_CRDS_OUT="${PLATFORM_DIR}/envoy-gateway/crds/envoy-gateway-crds.yaml"
 ENVOY_GATEWAY_WEBHOOK_CERT_OUT="${PLATFORM_DIR}/envoy-gateway/pre-install/webhook-cert.yaml"
 
 
@@ -78,15 +79,25 @@ kustomize build components/external-secrets > "${ESO_OUT}"
 # --- Build Envoy Gateway -----------------------------------------------------
 section "🌐 Rendering Envoy Gateway Helm chart..."
 helm template envoy-gateway \
-  components/envoy-gateway/upstream/chart/gateway-helm \
-  -n envoy-gateway-system \
-  --include-crds \
-  --create-namespace \
+  components/envoy-gateway/upstream/charts/release/gateway-helm \
+  -n envoy-gateway \
+  --skip-crds \
   --set topologyInjector.enabled=false \
-  > components/envoy-gateway/upstream/rendered-envoy-gateway.yaml
+  > components/envoy-gateway/release/rendered-envoy-gateway.yaml
 
 section "🏗️ Building Envoy Gateway manifests..."
-kustomize build components/envoy-gateway > "${ENVOY_GATEWAY_OUT}"
+kustomize build components/envoy-gateway/release > "${ENVOY_GATEWAY_OUT}"
+
+section "🌐 Rendering Envoy Gateway CRD Helm chart..."
+helm template envoy-gateway \
+  components/envoy-gateway/upstream/charts/crds/gateway-crds-helm \
+  --set crds.gatewayAPI.enabled=true \
+  --set crds.gatewayAPI.channel=standard \
+  --set crds.envoyGateway.enabled=true \
+  > components/envoy-gateway/crds/rendered-envoy-gateway-crds.yaml
+
+section "🏗️ Building Envoy Gateway crds..."
+cp components/envoy-gateway/crds/rendered-envoy-gateway-crds.yaml ${ENVOY_GATEWAY_CRDS_OUT}
 
 section "🏗️ Building Envoy Gateway Webhook Secret..."
 kustomize build components/envoy-gateway/webhook-cert > "${ENVOY_GATEWAY_WEBHOOK_CERT_OUT}"
@@ -100,6 +111,7 @@ cat <<EOF
   - ${CERT_MANAGER_OUT}
   - ${ESO_OUT}
   - ${ENVOY_GATEWAY_OUT}
+  - ${ENVOY_GATEWAY_CRDS_OUT}
   - ${ENVOY_GATEWAY_WEBHOOK_CERT_OUT}
 EOF
 echo
