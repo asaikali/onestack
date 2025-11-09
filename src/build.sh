@@ -16,10 +16,27 @@ set -euo pipefail
 #   - helm
 # -----------------------------------------------------------------------------
 
+# ANSI escape code for bold text
+BOLD=$(tput bold)
+RESET=$(tput sgr0)
+
+section() {
+  echo
+  echo "${BOLD}$1${RESET}"
+}
+
+# --- Tool Version Check ------------------------------------------------------
+
+section "🧰 Tool versions"
+echo "vendir:    $(vendir version | head -n1)"
+echo "kustomize: $(kustomize version | head -n1)"
+echo "helm:      $(helm version --short | head -n1)"
+echo
+
 # --- Setup -------------------------------------------------------------------
 
 # Ensure vendir syncs dependencies before building
-echo "🔄 Syncing dependencies with vendir..."
+section "🔄 Syncing dependencies with vendir..."
 vendir sync
 
 # Determine repository root
@@ -34,15 +51,15 @@ ENVOY_GATEWAY_OUT="${PLATFORM_DIR}/envoy-gateway/envoy-gateway.yaml"
 
 
 # --- Build Flux --------------------------------------------------------------
-echo "🚀 Building Flux manifests..."
+section "🚀 Building Flux manifests..."
 kustomize build components/flux > "${FLUX_OUT}"
 
 # --- Build Cert-Manager ------------------------------------------------------
-echo "🔐 Building Cert-Manager manifests..."
+section "🔐 Building Cert-Manager manifests..."
 kustomize build components/cert-manager > "${CERT_MANAGER_OUT}"
 
 # --- Build External Secrets Operator ----------------------------------------
-echo "🧩 Rendering External Secrets Operator Helm chart..."
+section "🧩 Rendering External Secrets Operator Helm chart..."
 helm template external-secrets \
   components/external-secrets/upstream/chart \
   -n external-secrets \
@@ -58,7 +75,7 @@ echo "🏗️ Building External Secrets manifests..."
 kustomize build components/external-secrets > "${ESO_OUT}"
 
 # --- Build Envoy Gateway -----------------------------------------------------
-echo "🌐 Rendering Envoy Gateway Helm chart..."
+section "🌐 Rendering Envoy Gateway Helm chart..."
 helm template envoy-gateway \
   components/envoy-gateway/upstream/chart/gateway-helm \
   -n envoy-gateway-systems \
@@ -66,12 +83,12 @@ helm template envoy-gateway \
   --create-namespace \
   > components/envoy-gateway/upstream/rendered-envoy-gateway.yaml
 
-echo "🏗️ Building Envoy Gateway manifests..."
+section "🏗️ Building Envoy Gateway manifests..."
 kustomize build components/envoy-gateway > "${ENVOY_GATEWAY_OUT}"
 
 # --- Summary -----------------------------------------------------------------
 echo
-echo "✅ Build completed. Generated manifests:"
+section "✅ Build completed. Generated manifests:"
 cat <<EOF
   - ${FLUX_OUT}
   - ${CERT_MANAGER_OUT}
