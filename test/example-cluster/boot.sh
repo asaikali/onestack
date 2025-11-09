@@ -3,7 +3,7 @@ set -euo pipefail
 
 NAMESPACE="flux-system"
 COMPONENTS_URL="https://raw.githubusercontent.com/asaikali/onestack/refs/heads/main/platform/flux/flux.yaml"
-CLUSTER_URL="https://raw.githubusercontent.com/asaikali/onestack/refs/heads/main/test/example-cluster/sync/cluster.yaml"
+CLUSTER_URL="https://raw.githubusercontent.com/asaikali/onestack/refs/heads/main/test/example-cluster/cluster.yaml"
 
 # ANSI escape code for bold text
 BOLD=$(tput bold)
