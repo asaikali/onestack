@@ -45,7 +45,7 @@ spec:
       copy:
         - from: "@platform-packages/platform/"
           to: "@artifact/"
-        - from: "@cluster-config/test/example-cluster/"
+        - from: "@cluster-config/test/example-cluster/**"
           to: "@artifact/"
 
 ---
