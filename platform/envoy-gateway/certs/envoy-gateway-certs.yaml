@@ -13,6 +13,8 @@
 #   3️⃣ Data plane certificate (Envoy proxies)
 #   4️⃣ Rate limiting service certificate (optional)
 #   5️⃣ OIDC HMAC secret (optional, only if OAuth2/OIDC filters used)
+#
+# docs: https://gateway.envoyproxy.io/docs/install/custom-cert/
 # ==================================================================================================
 
 apiVersion: v1
@@ -47,8 +49,8 @@ spec:
   duration: 8760h          # 1 year
   renewBefore: 720h        # 30 days before expiry
   dnsNames:
-    - envoy-gateway-webhook.envoy-gateway.svc
-    - envoy-gateway-webhook.envoy-gateway.svc.cluster.local
+    - "envoy-gateway-webhook.envoy-gateway.svc"
+    - "envoy-gateway-webhook.envoy-gateway.svc.cluster.local"
   issuerRef:
     kind: ClusterIssuer
     name: platform-issuer
@@ -79,15 +81,15 @@ spec:
   secretName: envoy-gateway
   commonName: envoy-gateway
   dnsNames:
-    - envoy-gateway
-    - envoy-gateway.envoy-gateway
-    - envoy-gateway.envoy-gateway.svc
-    - envoy-gateway.envoy-gateway.svc.cluster.local
+    - "envoy-gateway"
+    - "envoy-gateway.envoy-gateway"
+    - "envoy-gateway.envoy-gateway.svc"
+    - "envoy-gateway.envoy-gateway.svc.cluster.local"
   usages:
-    - digital signature
-    - key encipherment
-    - data encipherment
-    - content commitment
+    - "digital signature"
+    - "key encipherment"
+    - "data encipherment"
+    - "content commitment"
   issuerRef:
     kind: ClusterIssuer
     name: platform-issuer
@@ -119,10 +121,10 @@ spec:
   dnsNames:
     - "*.envoy-gateway"
   usages:
-    - digital signature
-    - key encipherment
-    - data encipherment
-    - content commitment
+    - "digital signature"
+    - "key encipherment"
+    - "data encipherment"
+    - "content commitment"
   issuerRef:
     kind: ClusterIssuer
     name: platform-issuer
@@ -153,34 +155,10 @@ spec:
   dnsNames:
     - "*.envoy-gateway"
   usages:
-    - digital signature
-    - key encipherment
-    - data encipherment
-    - content commitment
+    - "digital signature"
+    - "key encipherment"
+    - "data encipherment"
+    - "content commitment"
   issuerRef:
     kind: ClusterIssuer
     name: platform-issuer
----
-# ---------------------------------------------------------------------------
-# 5️⃣ OIDC HMAC secret (optional)
-# ---------------------------------------------------------------------------
-# Used by: Envoy Gateway’s **OAuth2 / OIDC filters**.
-#
-# Purpose:
-#   - Provides the symmetric HMAC key used to sign JWT tokens
-#     for user sessions in OAuth2 / OIDC flows.
-#
-# Notes:
-#   - Only needed if you enable OIDC or OAuth2 filters in your Gateway configuration.
-#   - You can rotate this by reapplying a new Secret with a different value.
-# ---------------------------------------------------------------------------
-apiVersion: v1
-kind: Secret
-metadata:
-  name: envoy-oidc-hmac
-  namespace: envoy-gateway
-  labels:
-    app.kubernetes.io/name: envoy-gateway
-type: Opaque
-stringData:
-  hmac: "{{ randAlphaNum 32 }}"
