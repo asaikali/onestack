@@ -3,6 +3,18 @@ kind: Kustomization
 
 namespace: flux-system
 
+patchesJson6902:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: kustomize-controller
+      namespace: flux-system
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --feature-gates=ExternalArtifact=true
+
 resources:
   - namespace.yaml
   - upstream/manifests/source-controller.yaml

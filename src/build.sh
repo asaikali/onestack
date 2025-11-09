@@ -8,7 +8,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 PLATFORM_DIR=${REPO_ROOT}/platform
 
-FLUX="${PLATFORM_DIR}/flux-system/gotk-components.yaml"
+FLUX="${PLATFORM_DIR}/flux/flux.yaml"
 CERT_MANAGER="${PLATFORM_DIR}/cert-manager/cert-manager.yaml"
 ESO="${PLATFORM_DIR}/external-secrets/external-secrets.yaml"
 ENVOY_GATEWAY="${PLATFORM_DIR}/envoy-gateway/envoy-gateway.yaml"
