@@ -33,7 +33,7 @@
 # ==================================================================================================
 
 # --------------------------------------------------------------------------------------------------
-# 1️⃣  Bootstrap Flux itself
+# Bootstrap Flux itself
 # --------------------------------------------------------------------------------------------------
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -50,7 +50,7 @@ spec:
   path: ./platform/flux
 
 # --------------------------------------------------------------------------------------------------
-# 2️⃣  Install cert-manager core controllers and CRDs
+# Install cert-manager core controllers and CRDs
 # --------------------------------------------------------------------------------------------------
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -70,7 +70,7 @@ spec:
   path: ./platform/cert-manager/install
 
 # --------------------------------------------------------------------------------------------------
-# 3️⃣  Configure cluster-wide certificate issuers (CA, platform-issuer, etc.)
+# Configure cluster-wide certificate issuers (CA, platform-issuer, etc.)
 # --------------------------------------------------------------------------------------------------
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -90,7 +90,7 @@ spec:
   path: ./platform/cert-manager/config
 
 # --------------------------------------------------------------------------------------------------
-# 4️⃣  Deploy External Secrets Operator (ESO)
+# Deploy External Secrets Operator (ESO)
 #      Relies on cert-manager to issue its webhook certificates.
 # --------------------------------------------------------------------------------------------------
 ---
@@ -111,13 +111,13 @@ spec:
   path: ./platform/external-secrets
 
 # --------------------------------------------------------------------------------------------------
-# 5️⃣  Deploy Envoy Gateway (or any ingress/gateway layer)
+# Deploy Envoy Gateway Webhook Certs
 # --------------------------------------------------------------------------------------------------
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: envoy-gateway
+  name: envoy-gateway-prereqs
   namespace: flux-system
 spec:
   interval: 10m
@@ -128,4 +128,25 @@ spec:
   sourceRef:
     kind: ExternalArtifact
     name: cluster
-  path: ./platform/envoy-gateway
+  path: ./platform/envoy-gateway/pre-install
+
+
+# --------------------------------------------------------------------------------------------------
+# Deploy Envoy Gateway (or any ingress/gateway layer)
+# --------------------------------------------------------------------------------------------------
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: envoy-gateway-install
+  namespace: flux-system
+spec:
+  interval: 10m
+  dependsOn:
+    - name: envoy-gateway-prereqs
+  prune: true
+  wait: true
+  sourceRef:
+    kind: ExternalArtifact
+    name: cluster
+  path: ./platform/envoy-gateway/install

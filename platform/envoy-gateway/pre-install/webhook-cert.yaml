@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: envoy-gateway
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/name: envoy-gateway
+  name: envoy-gateway-webhook-cert
+  namespace: envoy-gateway
+spec:
+  dnsNames:
+  - envoy-gateway-webhook.envoy-gateway.svc
+  - envoy-gateway-webhook.envoy-gateway.svc.cluster.local
+  duration: 8760h
+  issuerRef:
+    kind: ClusterIssuer
+    name: platform-issuer
+  renewBefore: 720h
+  secretName: envoy-gateway-webhook-cert

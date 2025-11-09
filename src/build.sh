@@ -47,7 +47,8 @@ PLATFORM_DIR="${REPO_ROOT}/platform"
 FLUX_OUT="${PLATFORM_DIR}/flux/flux.yaml"
 CERT_MANAGER_OUT="${PLATFORM_DIR}/cert-manager/install/cert-manager.yaml"
 ESO_OUT="${PLATFORM_DIR}/external-secrets/external-secrets.yaml"
-ENVOY_GATEWAY_OUT="${PLATFORM_DIR}/envoy-gateway/envoy-gateway.yaml"
+ENVOY_GATEWAY_OUT="${PLATFORM_DIR}/envoy-gateway/install/envoy-gateway.yaml"
+ENVOY_GATEWAY_WEBHOOK_CERT_OUT="${PLATFORM_DIR}/envoy-gateway/pre-install/webhook-cert.yaml"
 
 
 # --- Build Flux --------------------------------------------------------------
@@ -86,6 +87,10 @@ helm template envoy-gateway \
 section "🏗️ Building Envoy Gateway manifests..."
 kustomize build components/envoy-gateway > "${ENVOY_GATEWAY_OUT}"
 
+section "🏗️ Building Envoy Gateway Webhook Secret..."
+kustomize build components/envoy-gateway/webhook-cert > "${ENVOY_GATEWAY_WEBHOOK_CERT_OUT}"
+
+
 # --- Summary -----------------------------------------------------------------
 echo
 section "✅ Build completed. Generated manifests:"
@@ -94,5 +99,6 @@ cat <<EOF
   - ${CERT_MANAGER_OUT}
   - ${ESO_OUT}
   - ${ENVOY_GATEWAY_OUT}
+  - ${ENVOY_GATEWAY_WEBHOOK_CERT_OUT}
 EOF
 echo
