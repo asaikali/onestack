@@ -3,7 +3,16 @@ kind: Kustomization
 
 namespace: flux-system
 
-patchesJson6902:
+resources:
+  - namespace.yaml
+  - upstream/manifests/source-controller.yaml
+  - upstream/manifests/source-watcher.yaml
+  - upstream/manifests/kustomize-controller.yaml
+  - upstream/manifests/notification-controller.yaml
+  - upstream/manifests/policies.yaml
+  - upstream/manifests/rbac.yaml
+
+patches:
   - target:
       group: apps
       version: v1
@@ -14,13 +23,3 @@ patchesJson6902:
       - op: add
         path: /spec/template/spec/containers/0/args/-
         value: --feature-gates=ExternalArtifact=true
-
-resources:
-  - namespace.yaml
-  - upstream/manifests/source-controller.yaml
-  - upstream/manifests/source-watcher.yaml
-  - upstream/manifests/kustomize-controller.yaml
-  - upstream/manifests/notification-controller.yaml
-  - upstream/manifests/policies.yaml
-  - upstream/manifests/rbac.yaml
-

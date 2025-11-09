@@ -9,7 +9,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 PLATFORM_DIR=${REPO_ROOT}/platform
 
 FLUX="${PLATFORM_DIR}/flux/flux.yaml"
-CERT_MANAGER="${PLATFORM_DIR}/cert-manager/cert-manager.yaml"
+CERT_MANAGER="${PLATFORM_DIR}/cert-manager/install/cert-manager.yaml"
 ESO="${PLATFORM_DIR}/external-secrets/external-secrets.yaml"
 ENVOY_GATEWAY="${PLATFORM_DIR}/envoy-gateway/envoy-gateway.yaml"
 
@@ -22,6 +22,10 @@ kustomize build components/cert-manager > ${CERT_MANAGER}
 helm template external-secrets \
     components/external-secrets/upstream/chart \
     -n external-secrets \
+    --set certController.create=false \
+    --set webhook.certManager.enabled=true \
+    --set webhook.certManager.cert.issuerRef.kind=ClusterIssuer \
+    --set webhook.certManager.cert.issuerRef.name=platform-issuer \
     --include-crds \
     --create-namespace >  components/external-secrets/upstream/rendered-external-secrets.yaml
 

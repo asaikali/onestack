@@ -1,0 +1,94 @@
+# ---------------------------------------------------------------------------
+# 🧩 PLATFORM ISSUER CHAIN
+#
+# This file defines a three-stage certificate authority bootstrap process
+# for the platform. It creates a long-lived internal root CA that
+# can sign workload and webhook certificates across the entire cluster.
+#
+# The final result is a ClusterIssuer named `platform-issuer` that any
+# namespace or controller can reference via:
+#
+#     issuerRef:
+#       kind: ClusterIssuer
+#       name: platform-issuer
+#
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# 1️⃣ Bootstrap issuer
+# ---------------------------------------------------------------------------
+# This temporary, self-signed Issuer exists only to mint the very first
+# root CA certificate. Once the root is created, this object can remain
+# or be deleted — the signed root persists independently.
+#
+# It lives in the cert-manager namespace because it only runs locally
+# and does not need cluster-wide scope.
+# ---------------------------------------------------------------------------
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: root-bootstrap
+  namespace: cert-manager
+  labels:
+    cert-manager.io/purpose: bootstrap
+spec:
+  selfSigned: {}
+
+---
+# ---------------------------------------------------------------------------
+# 2️⃣ Root CA certificate
+# ---------------------------------------------------------------------------
+# This is the actual cluster trust anchor. It creates a secret named
+# `platform-root-keypair` in the `cert-manager` namespace containing
+# the private key and CA certificate.
+#
+# The rotation policy is set to `Never` to avoid unexpected key changes.
+# You can manually rotate by re-applying this file with a new name or
+# by setting `rotationPolicy: Always` if you want cert-manager to rotate
+# the root keypair automatically.
+# ---------------------------------------------------------------------------
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: platform-root-ca
+  namespace: cert-manager
+  labels:
+    cert-manager.io/purpose: root
+spec:
+  isCA: true
+  commonName: platform-root-ca
+  secretName: platform-root-keypair
+  duration: 87600h   # 10 years (long-lived cluster root)
+  issuerRef:
+    name: root-bootstrap
+    kind: Issuer
+  privateKey:
+    rotationPolicy: Never
+
+---
+# ---------------------------------------------------------------------------
+# 3️⃣ Cluster-wide issuer
+# ---------------------------------------------------------------------------
+# The final, operational ClusterIssuer.
+#
+# This object references the root keypair secret created above and
+# serves as the *default signing authority* for internal certificates.
+#
+# Any application, webhook, or namespace within this cluster can use it
+# to request TLS certificates for internal communication, webhooks,
+# or service-to-service encryption.
+#
+# Example usage in a workload:
+#   issuerRef:
+#     kind: ClusterIssuer
+#     name: platform-issuer
+# ---------------------------------------------------------------------------
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: platform-issuer
+  labels:
+    cert-manager.io/purpose: platform
+spec:
+  ca:
+    secretName: platform-root-keypair
