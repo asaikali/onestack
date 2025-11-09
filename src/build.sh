@@ -50,7 +50,7 @@ ESO_OUT="${PLATFORM_DIR}/external-secrets/external-secrets.yaml"
 ENVOY_GATEWAY_OUT="${PLATFORM_DIR}/envoy-gateway/install/envoy-gateway.yaml"
 ENVOY_GATEWAY_CRDS_OUT="${PLATFORM_DIR}/envoy-gateway/crds/envoy-gateway-crds.yaml"
 ENVOY_GATEWAY_WEBHOOK_CERT_OUT="${PLATFORM_DIR}/envoy-gateway/pre-install/webhook-cert.yaml"
-
+GATEWAY_API_CRDS_OUT="${PLATFORM_DIR}/gateway-api/gateway-api-crds.yaml"
 
 # --- Build Flux --------------------------------------------------------------
 section "🚀 Building Flux manifests..."
@@ -91,13 +91,25 @@ kustomize build components/envoy-gateway/release > "${ENVOY_GATEWAY_OUT}"
 section "🌐 Rendering Envoy Gateway CRD Helm chart..."
 helm template envoy-gateway \
   components/envoy-gateway/upstream/charts/crds/gateway-crds-helm \
-  --set crds.gatewayAPI.enabled=true \
+  --set crds.gatewayAPI.enabled=false \
   --set crds.gatewayAPI.channel=standard \
   --set crds.envoyGateway.enabled=true \
-  > components/envoy-gateway/crds/rendered-envoy-gateway-crds.yaml
+  > components/envoy-gateway/crds/envoy/rendered-envoy-gateway-crds.yaml
 
 section "🏗️ Building Envoy Gateway crds..."
-cp components/envoy-gateway/crds/rendered-envoy-gateway-crds.yaml ${ENVOY_GATEWAY_CRDS_OUT}
+cp components/envoy-gateway/crds/envoy/rendered-envoy-gateway-crds.yaml ${ENVOY_GATEWAY_CRDS_OUT}
+
+section "🌐 Rendering Kubernetes Gateway API CRDs from Envoy CRDs Helm chart..."
+helm template envoy-gateway \
+  components/envoy-gateway/upstream/charts/crds/gateway-crds-helm \
+  --set crds.gatewayAPI.enabled=true \
+  --set crds.gatewayAPI.channel=standard \
+  --set crds.envoyGateway.enabled=false \
+  > components/envoy-gateway/crds/gateway-api/rendered-gateway-api-crds.yaml
+
+section "🏗️ Building Kubernetes Gateway API CRDs..."
+cp components/envoy-gateway/crds/gateway-api/rendered-gateway-api-crds.yaml ${GATEWAY_API_CRDS_OUT}
+
 
 section "🏗️ Building Envoy Gateway Webhook Secret..."
 kustomize build components/envoy-gateway/webhook-cert > "${ENVOY_GATEWAY_WEBHOOK_CERT_OUT}"
@@ -113,5 +125,6 @@ cat <<EOF
   - ${ENVOY_GATEWAY_OUT}
   - ${ENVOY_GATEWAY_CRDS_OUT}
   - ${ENVOY_GATEWAY_WEBHOOK_CERT_OUT}
+  - ${GATEWAY_API_CRDS_OUT}
 EOF
 echo
