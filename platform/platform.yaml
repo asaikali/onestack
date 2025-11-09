@@ -97,7 +97,6 @@ spec:
 
 # --------------------------------------------------------------------------------------------------
 # 5️⃣  Deploy Envoy Gateway (or any ingress/gateway layer)
-#      Depends on External Secrets for TLS certificates and credentials.
 # --------------------------------------------------------------------------------------------------
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -108,7 +107,7 @@ metadata:
 spec:
   interval: 10m
   dependsOn:
-    - name: external-secrets
+    - name: cert-manager-config
   prune: true
   wait: true
   sourceRef:
