@@ -45065,7 +45065,7 @@ metadata:
     app.kubernetes.io/name: gateway-helm
     app.kubernetes.io/version: v1.5.4
     helm.sh/chart: gateway-helm-v1.5.4
-  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-systems
+  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-system
 rules:
 - apiGroups:
   - admissionregistration.k8s.io
@@ -45078,7 +45078,7 @@ rules:
 - apiGroups:
   - admissionregistration.k8s.io
   resourceNames:
-  - envoy-gateway-topology-injector.envoy-gateway-systems
+  - envoy-gateway-topology-injector.envoy-gateway-system
   resources:
   - mutatingwebhookconfigurations
   verbs:
@@ -45291,11 +45291,11 @@ metadata:
     app.kubernetes.io/name: gateway-helm
     app.kubernetes.io/version: v1.5.4
     helm.sh/chart: gateway-helm-v1.5.4
-  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-systems
+  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-systems
+  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-system
 subjects:
 - kind: ServiceAccount
   name: envoy-gateway-gateway-helm-certgen
@@ -45557,7 +45557,7 @@ metadata:
     app.kubernetes.io/name: gateway-helm
     app.kubernetes.io/version: v1.5.4
     helm.sh/chart: gateway-helm-v1.5.4
-  name: envoy-gateway-topology-injector.envoy-gateway-systems
+  name: envoy-gateway-topology-injector.envoy-gateway-system
 webhooks:
 - admissionReviewVersions:
   - v1
@@ -45574,7 +45574,7 @@ webhooks:
     - key: kubernetes.io/metadata.name
       operator: In
       values:
-      - envoy-gateway-systems
+      - envoy-gateway-system
   rules:
   - apiGroups:
     - ""

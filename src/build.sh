@@ -78,7 +78,7 @@ kustomize build components/external-secrets > "${ESO_OUT}"
 section "🌐 Rendering Envoy Gateway Helm chart..."
 helm template envoy-gateway \
   components/envoy-gateway/upstream/chart/gateway-helm \
-  -n envoy-gateway-systems \
+  -n envoy-gateway-system \
   --include-crds \
   --create-namespace \
   > components/envoy-gateway/upstream/rendered-envoy-gateway.yaml
