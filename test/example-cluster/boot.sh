@@ -36,4 +36,4 @@ kubectl apply -f "${CLUSTER_URL}"
 
 
 section "🚀 flux resources..."
-flux get all
+watch flux get all
