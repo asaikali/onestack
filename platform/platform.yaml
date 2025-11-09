@@ -1,0 +1,117 @@
+# ==================================================================================================
+#  platform.yaml
+#
+#  This file defines the orchestration of all **platform-level components** managed by Flux.
+#  It is applied directly by Flux (via a parent Kustomization or bootstrap process).
+#
+#  Each Kustomization below represents a logical layer of the platform stack and declares:
+#   - where its manifests are located (`path`)
+#   - which component it depends on (`dependsOn`)
+#   - how Flux should handle reconciliation (`interval`, `prune`, `wait`, etc.)
+#
+#  The dependency chain is structured as follows:
+#
+#      flux  ──▶  cert-manager-install  ──▶  cert-manager-config  ──▶  external-secrets  ──▶  envoy-gateway
+#
+#  This ensures a predictable and stable rollout order during cluster bootstrap or upgrades.
+# ==================================================================================================
+
+
+# --------------------------------------------------------------------------------------------------
+# 1️⃣  Bootstrap Flux itself
+# --------------------------------------------------------------------------------------------------
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: flux
+  namespace: flux-system
+spec:
+  interval: 10m
+  prune: true
+  sourceRef:
+    kind: ExternalArtifact
+    name: cluster
+  path: ./platform/flux
+
+# --------------------------------------------------------------------------------------------------
+# 2️⃣  Install cert-manager core controllers and CRDs
+# --------------------------------------------------------------------------------------------------
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager-install
+  namespace: flux-system
+spec:
+  interval: 10m
+  dependsOn:
+    - name: flux
+  prune: true
+  wait: true
+  sourceRef:
+    kind: ExternalArtifact
+    name: cluster
+  path: ./platform/cert-manager/install
+
+# --------------------------------------------------------------------------------------------------
+# 3️⃣  Configure cluster-wide certificate issuers (CA, platform-issuer, etc.)
+# --------------------------------------------------------------------------------------------------
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager-config
+  namespace: flux-system
+spec:
+  interval: 10m
+  dependsOn:
+    - name: cert-manager-install
+  prune: true
+  wait: true
+  sourceRef:
+    kind: ExternalArtifact
+    name: cluster
+  path: ./platform/cert-manager/config
+
+# --------------------------------------------------------------------------------------------------
+# 4️⃣  Deploy External Secrets Operator (ESO)
+#      Relies on cert-manager to issue its webhook certificates.
+# --------------------------------------------------------------------------------------------------
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-secrets
+  namespace: flux-system
+spec:
+  interval: 10m
+  dependsOn:
+    - name: cert-manager-config
+  prune: true
+  wait: true
+  sourceRef:
+    kind: ExternalArtifact
+    name: cluster
+  path: ./platform/external-secrets
+
+# --------------------------------------------------------------------------------------------------
+# 5️⃣  Deploy Envoy Gateway (or any ingress/gateway layer)
+#      Depends on External Secrets for TLS certificates and credentials.
+# --------------------------------------------------------------------------------------------------
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: envoy-gateway
+  namespace: flux-system
+spec:
+  interval: 10m
+  dependsOn:
+    - name: external-secrets
+  prune: true
+  wait: true
+  sourceRef:
+    kind: ExternalArtifact
+    name: cluster
+  path: ./platform/envoy-gateway

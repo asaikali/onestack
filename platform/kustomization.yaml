@@ -1,8 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - flux/flux-kustomization.yaml
-  - cert-manager/install/flux-kustomization.yaml
-  - cert-manager/config/flux-kustomization.yaml
-  - external-secrets/flux-kustomization.yaml
-  - envoy-gateway/flux-kustomization.yaml
