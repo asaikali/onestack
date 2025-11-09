@@ -6,9 +6,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./platform/cert-manager/install
-  prune: true
+  prune: false
   sourceRef:
     kind: ExternalArtifact
     name: cluster
-
+  path: ./platform/cert-manager/install

@@ -1,4 +1,3 @@
-
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -6,10 +5,10 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./platform/external-secrets/
-  prune: true
+  dependsOn:
+    - name: cert-manager-config
+  prune: false
   sourceRef:
     kind: ExternalArtifact
     name: cluster
-  dependsOn:
-    - name: cert-manager-config
+  path: ./platform/external-secrets/
