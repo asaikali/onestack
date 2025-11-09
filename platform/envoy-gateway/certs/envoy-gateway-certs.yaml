@@ -1,0 +1,186 @@
+# ==================================================================================================
+# 🧩 Envoy Gateway Certificates — GitOps Managed
+#
+# This manifest replaces the imperative certgen job with declarative cert-manager Certificates.
+# All certificates are signed by the cluster-wide `platform-issuer`, ensuring:
+#   - A consistent internal trust chain across all components
+#   - Automatic rotation and recovery by cert-manager
+#   - Safe no-op behavior for Helm's built-in certgen job
+#
+# Components covered:
+#   1️⃣ Webhook TLS certificate (for the admission webhook server)
+#   2️⃣ Control plane certificate (Envoy Gateway controller)
+#   3️⃣ Data plane certificate (Envoy proxies)
+#   4️⃣ Rate limiting service certificate (optional)
+#   5️⃣ OIDC HMAC secret (optional, only if OAuth2/OIDC filters used)
+# ==================================================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: envoy-gateway
+---
+# ---------------------------------------------------------------------------
+# 1️⃣ Webhook certificate
+# ---------------------------------------------------------------------------
+# Used by: The **Envoy Gateway admission webhooks**.
+#
+# Purpose:
+#   - Provides TLS for the MutatingWebhookConfiguration and ValidatingWebhookConfiguration
+#     that run inside the Envoy Gateway controller pod.
+#   - The cert is mounted into the webhook server container.
+#
+# Notes:
+#   - Required for Kubernetes to trust the webhook server.
+#   - Managed by cert-manager; if deleted, cert-manager auto-recreates it.
+# ---------------------------------------------------------------------------
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: envoy-gateway-webhook-cert
+  namespace: envoy-gateway
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/name: envoy-gateway
+spec:
+  secretName: envoy-gateway-webhook-cert
+  duration: 8760h          # 1 year
+  renewBefore: 720h        # 30 days before expiry
+  dnsNames:
+    - envoy-gateway-webhook.envoy-gateway.svc
+    - envoy-gateway-webhook.envoy-gateway.svc.cluster.local
+  issuerRef:
+    kind: ClusterIssuer
+    name: platform-issuer
+---
+# ---------------------------------------------------------------------------
+# 2️⃣ Control plane certificate (Envoy Gateway controller)
+# ---------------------------------------------------------------------------
+# Used by: The **Envoy Gateway control-plane** itself.
+#
+# Purpose:
+#   - Enables secure mTLS communication between the control plane (Envoy Gateway)
+#     and its managed Envoy data-plane proxies.
+#   - Acts as the “server certificate” for the Gateway’s management xDS gRPC endpoint.
+#
+# Notes:
+#   - Must exist before the Envoy Gateway Deployment starts.
+#   - If missing, the certgen job tries to create it (we override that via GitOps).
+#   - Rotation handled automatically by cert-manager.
+# ---------------------------------------------------------------------------
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: envoy-gateway
+  namespace: envoy-gateway
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+spec:
+  secretName: envoy-gateway
+  commonName: envoy-gateway
+  dnsNames:
+    - envoy-gateway
+    - envoy-gateway.envoy-gateway
+    - envoy-gateway.envoy-gateway.svc
+    - envoy-gateway.envoy-gateway.svc.cluster.local
+  usages:
+    - digital signature
+    - key encipherment
+    - data encipherment
+    - content commitment
+  issuerRef:
+    kind: ClusterIssuer
+    name: platform-issuer
+---
+# ---------------------------------------------------------------------------
+# 3️⃣ Data plane certificate (Envoy proxies)
+# ---------------------------------------------------------------------------
+# Used by: The **Envoy data-plane proxies** managed by Envoy Gateway.
+#
+# Purpose:
+#   - Provides each Envoy proxy with an mTLS client certificate so it can
+#     securely connect to the control-plane’s xDS management server.
+#
+# Notes:
+#   - CommonName and wildcard DNS allow this cert to be mounted across replicas.
+#   - If you deploy Envoy as a DaemonSet or Deployment, this Secret must be
+#     mounted into those pods.
+# ---------------------------------------------------------------------------
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: envoy
+  namespace: envoy-gateway
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+spec:
+  secretName: envoy
+  commonName: "*.envoy-gateway"
+  dnsNames:
+    - "*.envoy-gateway"
+  usages:
+    - digital signature
+    - key encipherment
+    - data encipherment
+    - content commitment
+  issuerRef:
+    kind: ClusterIssuer
+    name: platform-issuer
+---
+# ---------------------------------------------------------------------------
+# 4️⃣ Rate limiting service certificate (optional)
+# ---------------------------------------------------------------------------
+# Used by: The **Envoy RateLimit service** (if enabled).
+#
+# Purpose:
+#   - Provides TLS identity for the internal rate-limiter component.
+#   - Allows the control plane and data plane to securely communicate
+#     with the rate-limiter via mTLS.
+#
+# Notes:
+#   - Safe to include even if ratelimit is disabled — unused Secrets are harmless.
+# ---------------------------------------------------------------------------
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: envoy-rate-limit
+  namespace: envoy-gateway
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+spec:
+  secretName: envoy-rate-limit
+  commonName: "*.envoy-gateway"
+  dnsNames:
+    - "*.envoy-gateway"
+  usages:
+    - digital signature
+    - key encipherment
+    - data encipherment
+    - content commitment
+  issuerRef:
+    kind: ClusterIssuer
+    name: platform-issuer
+---
+# ---------------------------------------------------------------------------
+# 5️⃣ OIDC HMAC secret (optional)
+# ---------------------------------------------------------------------------
+# Used by: Envoy Gateway’s **OAuth2 / OIDC filters**.
+#
+# Purpose:
+#   - Provides the symmetric HMAC key used to sign JWT tokens
+#     for user sessions in OAuth2 / OIDC flows.
+#
+# Notes:
+#   - Only needed if you enable OIDC or OAuth2 filters in your Gateway configuration.
+#   - You can rotate this by reapplying a new Secret with a different value.
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: envoy-oidc-hmac
+  namespace: envoy-gateway
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+type: Opaque
+stringData:
+  hmac: "{{ randAlphaNum 32 }}"
