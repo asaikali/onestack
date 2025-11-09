@@ -45056,38 +45056,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  annotations:
-    helm.sh/hook: pre-install, pre-upgrade
-    helm.sh/hook-weight: "-1"
-  labels:
-    app.kubernetes.io/instance: envoy-gateway
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: gateway-helm
-    app.kubernetes.io/version: v1.5.4
-    helm.sh/chart: gateway-helm-v1.5.4
-  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-system
-rules:
-- apiGroups:
-  - admissionregistration.k8s.io
-  resources:
-  - mutatingwebhookconfigurations
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - admissionregistration.k8s.io
-  resourceNames:
-  - envoy-gateway-topology-injector.envoy-gateway-system
-  resources:
-  - mutatingwebhookconfigurations
-  verbs:
-  - update
-  - patch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
   creationTimestamp: null
   name: envoy-gateway-gateway-helm-envoy-gateway-role
 rules:
@@ -45204,17 +45172,6 @@ rules:
   - backendtlspolicies/status
   verbs:
   - update
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - pods/binding
-  verbs:
-  - get
-  - list
-  - patch
-  - update
-  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -45282,28 +45239,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  annotations:
-    helm.sh/hook: pre-install, pre-upgrade
-    helm.sh/hook-weight: "-1"
-  labels:
-    app.kubernetes.io/instance: envoy-gateway
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: gateway-helm
-    app.kubernetes.io/version: v1.5.4
-    helm.sh/chart: gateway-helm-v1.5.4
-  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-system
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: envoy-gateway-gateway-helm-certgen:envoy-gateway-system
-subjects:
-- kind: ServiceAccount
-  name: envoy-gateway-gateway-helm-certgen
-  namespace: envoy-gateway
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
   name: envoy-gateway-gateway-helm-envoy-gateway-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -45342,6 +45277,8 @@ data:
         shutdownManager:
           image: docker.io/envoyproxy/gateway:v1.5.4
       type: Kubernetes
+    proxyTopologyInjector:
+      disabled: true
 kind: ConfigMap
 metadata:
   labels:
@@ -45379,9 +45316,6 @@ spec:
   - name: metrics
     port: 19001
     targetPort: 19001
-  - name: webhook
-    port: 9443
-    targetPort: 9443
   selector:
     app.kubernetes.io/instance: envoy-gateway
     app.kubernetes.io/name: gateway-helm
@@ -45446,8 +45380,6 @@ spec:
           name: wasm
         - containerPort: 19001
           name: metrics
-        - containerPort: 9443
-          name: webhook
         readinessProbe:
           httpGet:
             path: /readyz
@@ -45513,7 +45445,9 @@ spec:
         app: certgen
     spec:
       containers:
-      - command:
+      - args:
+        - --disable-topology-injector
+        command:
         - envoy-gateway
         - certgen
         env:
@@ -45543,45 +45477,3 @@ spec:
       restartPolicy: Never
       serviceAccountName: envoy-gateway-gateway-helm-certgen
   ttlSecondsAfterFinished: 30
----
-apiVersion: admissionregistration.k8s.io/v1
-kind: MutatingWebhookConfiguration
-metadata:
-  annotations:
-    helm.sh/hook: pre-install, pre-upgrade
-    helm.sh/hook-weight: "-1"
-  labels:
-    app.kubernetes.io/component: topology-injector
-    app.kubernetes.io/instance: envoy-gateway
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: gateway-helm
-    app.kubernetes.io/version: v1.5.4
-    helm.sh/chart: gateway-helm-v1.5.4
-  name: envoy-gateway-topology-injector.envoy-gateway-system
-webhooks:
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: envoy-gateway
-      namespace: envoy-gateway
-      path: /inject-pod-topology
-      port: 9443
-  failurePolicy: Ignore
-  name: topology.webhook.gateway.envoyproxy.io
-  namespaceSelector:
-    matchExpressions:
-    - key: kubernetes.io/metadata.name
-      operator: In
-      values:
-      - envoy-gateway-system
-  rules:
-  - apiGroups:
-    - ""
-    apiVersions:
-    - v1
-    operations:
-    - CREATE
-    resources:
-    - pods/binding
-  sideEffects: None

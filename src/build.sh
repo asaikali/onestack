@@ -82,6 +82,7 @@ helm template envoy-gateway \
   -n envoy-gateway-system \
   --include-crds \
   --create-namespace \
+  --set topologyInjector.enabled=false \
   > components/envoy-gateway/upstream/rendered-envoy-gateway.yaml
 
 section "🏗️ Building Envoy Gateway manifests..."
